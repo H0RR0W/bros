@@ -59,3 +59,4 @@ logs/
 # ── Generated ─────────────────────────────────────────────────────────────────
 make_pptx.py
 presentation.html
+.claude/

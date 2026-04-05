@@ -1,0 +1,61 @@
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+*.egg
+pip-log.txt
+
+# ── Node / Next.js ────────────────────────────────────────────────────────────
+node_modules/
+.next/
+out/
+.npm
+npm-debug.log*
+yarn-error.log*
+frontend/.env.local
+frontend/.env.production
+
+# ── Environment / secrets ──────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+*.crt
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+# Keep docker-compose.yml, ignore local overrides
+docker-compose.override.yml
+
+# ── Database ──────────────────────────────────────────────────────────────────
+*.sqlite3
+*.db
+postgres_data/
+
+# ── IDE / OS ──────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Generated ─────────────────────────────────────────────────────────────────
+make_pptx.py
+presentation.html

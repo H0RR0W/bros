@@ -1,0 +1,863 @@
+openapi: 3.0.3
+info:
+  title: CyberGuard API
+  description: |
+    REST API для образовательного симулятора кибербезопасности CyberGuard.
+
+    ## Аутентификация
+    Используется JWT Bearer-токен. Получите `access_token` через `/api/auth/login`
+    и передавайте в заголовке: `Authorization: Bearer <token>`
+
+    ## Базовый URL
+    - Локально: `https://localhost/api`
+    - Swagger UI: `https://localhost/docs`
+  version: "1.0.0"
+  contact:
+    name: CyberGuard Team
+    email: nikolay.bondar14@gmail.com
+
+servers:
+  - url: https://localhost/api
+    description: Локальный Docker-стенд
+
+tags:
+  - name: auth
+    description: Аутентификация и профиль пользователя
+  - name: game
+    description: Игровые сессии и сценарии
+  - name: users
+    description: Статистика и история пользователя
+  - name: leaderboard
+    description: Таблица лидеров
+  - name: certificates
+    description: Сертификаты
+  - name: admin
+    description: Панель администратора (требует роль admin)
+
+# ──────────────────────────────────────────────────────────────────────────────
+# COMPONENTS
+# ──────────────────────────────────────────────────────────────────────────────
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # ── Auth ──────────────────────────────────────────────────────────────────
+    RegisterRequest:
+      type: object
+      required: [email, username, password]
+      properties:
+        email:    { type: string, format: email, example: "user@example.com" }
+        username: { type: string, minLength: 3, maxLength: 50, example: "cyberuser" }
+        password: { type: string, minLength: 8, example: "P@ssw0rd123" }
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:    { type: string, format: email }
+        password: { type: string }
+
+    TokenResponse:
+      type: object
+      properties:
+        access_token:  { type: string }
+        refresh_token: { type: string }
+        token_type:    { type: string, example: "bearer" }
+        role:          { type: string, enum: [user, admin] }
+
+    UserResponse:
+      type: object
+      properties:
+        id:          { type: string, format: uuid }
+        email:       { type: string }
+        username:    { type: string }
+        role:        { type: string, enum: [user, admin] }
+        hp:          { type: integer, minimum: 0, maximum: 100 }
+        total_score: { type: integer }
+        league:      { type: string, example: "Осведомлённый" }
+        is_active:   { type: boolean }
+        first_name:  { type: string, nullable: true }
+        last_name:   { type: string, nullable: true }
+        patronymic:  { type: string, nullable: true }
+
+    ProfileUpdateRequest:
+      type: object
+      properties:
+        first_name:  { type: string, nullable: true }
+        last_name:   { type: string, nullable: true }
+        patronymic:  { type: string, nullable: true }
+
+    ChangePasswordRequest:
+      type: object
+      required: [old_password, new_password]
+      properties:
+        old_password: { type: string }
+        new_password: { type: string, minLength: 8 }
+
+    # ── Game ──────────────────────────────────────────────────────────────────
+    AnswerOption:
+      type: object
+      properties:
+        id:   { type: string, example: "a" }
+        text: { type: string }
+
+    ScenarioResponse:
+      type: object
+      properties:
+        scenarios:
+          type: array
+          items:
+            type: object
+            properties:
+              id:                 { type: string, format: uuid }
+              location:           { type: string, enum: [office, home, wifi] }
+              attack_type:        { type: string }
+              cwe_id:             { type: string, example: "CWE-1021" }
+              owasp_category:     { type: string, example: "A07" }
+              scenario_text:      { type: string }
+              answer_options:     { type: array, items: { "$ref": "#/components/schemas/AnswerOption" } }
+              correct_answer_id:  { type: string, example: "c" }
+              explanation_wrong:  { type: string }
+              explanation_correct:{ type: string }
+
+    StartSessionRequest:
+      type: object
+      required: [location]
+      properties:
+        location: { type: string, enum: [office, home, wifi] }
+
+    StartSessionResponse:
+      type: object
+      properties:
+        session_id: { type: string, format: uuid }
+        location:   { type: string }
+        hp_start:   { type: integer }
+
+    AnswerRequest:
+      type: object
+      required: [session_id, scenario_id, answer_id]
+      properties:
+        session_id:  { type: string, format: uuid }
+        scenario_id: { type: string, format: uuid }
+        answer_id:   { type: string, example: "b" }
+
+    AnswerResponse:
+      type: object
+      properties:
+        is_correct:          { type: boolean }
+        correct_answer_id:   { type: string }
+        explanation:         { type: string }
+        hp_delta:            { type: integer }
+        score_delta:         { type: integer }
+        hp_current:          { type: integer }
+
+    CompleteSessionRequest:
+      type: object
+      required: [session_id]
+      properties:
+        session_id: { type: string, format: uuid }
+
+    CompleteSessionResponse:
+      type: object
+      properties:
+        score_earned:   { type: integer }
+        correct_count:  { type: integer }
+        total_count:    { type: integer }
+        accuracy:       { type: number }
+        hp_end:         { type: integer }
+        league:         { type: string }
+        league_changed: { type: boolean }
+        total_score:    { type: integer }
+
+    SubmitResultRequest:
+      type: object
+      required: [location, steps_count, correct_count, hp_delta, score]
+      properties:
+        location:      { type: string, enum: [office, home, wifi, ai] }
+        steps_count:   { type: integer }
+        correct_count: { type: integer }
+        hp_delta:      { type: integer }
+        score:         { type: integer }
+
+    SubmitResultResponse:
+      type: object
+      properties:
+        hp_new:         { type: integer }
+        total_score:    { type: integer }
+        league:         { type: string }
+        league_changed: { type: boolean }
+
+    AIScenarioResponse:
+      type: object
+      properties:
+        scenario_id:         { type: string }
+        attack_type:         { type: string }
+        cwe_id:              { type: string }
+        owasp_category:      { type: string }
+        scenario_text:       { type: string }
+        answer_options:
+          type: array
+          items:
+            type: object
+            properties:
+              id:         { type: string }
+              text:       { type: string }
+              is_correct: { type: boolean }
+        correct_answer_id:   { type: string }
+        explanation_wrong:   { type: string }
+        explanation_correct: { type: string }
+
+    # ── Users ─────────────────────────────────────────────────────────────────
+    UserStats:
+      type: object
+      properties:
+        total_sessions:   { type: integer }
+        total_correct:    { type: integer }
+        total_answers:    { type: integer }
+        accuracy_percent: { type: number }
+        attacks_by_type:  { type: object, additionalProperties: { type: integer } }
+
+    SessionHistoryItem:
+      type: object
+      properties:
+        id:              { type: string, format: uuid }
+        location:        { type: string }
+        score:           { type: integer }
+        accuracy:        { type: number }
+        correct_count:   { type: integer }
+        scenarios_count: { type: integer }
+        date:            { type: string, format: date }
+
+    # ── Leaderboard ───────────────────────────────────────────────────────────
+    LeaderboardEntry:
+      type: object
+      properties:
+        rank:        { type: integer }
+        user_id:     { type: string, format: uuid }
+        username:    { type: string }
+        total_score: { type: integer }
+        league:      { type: string }
+
+    # ── Admin ─────────────────────────────────────────────────────────────────
+    AdminUserItem:
+      type: object
+      properties:
+        id:          { type: string, format: uuid }
+        email:       { type: string }
+        username:    { type: string }
+        role:        { type: string }
+        league:      { type: string }
+        total_score: { type: integer }
+        is_active:   { type: boolean }
+        created_at:  { type: string }
+
+    AdminStats:
+      type: object
+      properties:
+        total_users:           { type: integer }
+        active_users_7d:       { type: integer }
+        total_sessions:        { type: integer }
+        avg_accuracy:          { type: number }
+        scenarios_by_location: { type: object, additionalProperties: { type: integer } }
+        scenarios_by_type:     { type: object, additionalProperties: { type: integer } }
+
+    ScenarioCreateRequest:
+      type: object
+      required: [location, attack_type, cwe_id, owasp_category, scenario_text,
+                 answer_options, correct_answer_id, explanation_wrong, explanation_correct]
+      properties:
+        location:            { type: string, enum: [office, home, wifi] }
+        attack_type:         { type: string }
+        cwe_id:              { type: string, example: "CWE-306" }
+        owasp_category:      { type: string, example: "A07" }
+        scenario_text:       { type: string }
+        answer_options:
+          type: array
+          items:
+            type: object
+            properties:
+              id:   { type: string }
+              text: { type: string }
+        correct_answer_id:   { type: string }
+        explanation_wrong:   { type: string }
+        explanation_correct: { type: string }
+
+    AdminLogItem:
+      type: object
+      properties:
+        id:             { type: string, format: uuid }
+        admin_id:       { type: string, format: uuid }
+        admin_username: { type: string }
+        action:         { type: string }
+        target_id:      { type: string, nullable: true }
+        details:        { type: string, nullable: true }
+        created_at:     { type: string }
+
+  responses:
+    Unauthorized:
+      description: Не авторизован — отсутствует или невалидный токен
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail: { type: string, example: "Not authenticated" }
+    Forbidden:
+      description: Доступ запрещён — недостаточно прав
+    NotFound:
+      description: Ресурс не найден
+
+# ──────────────────────────────────────────────────────────────────────────────
+# PATHS
+# ──────────────────────────────────────────────────────────────────────────────
+paths:
+
+  # ── AUTH ────────────────────────────────────────────────────────────────────
+  /auth/register:
+    post:
+      tags: [auth]
+      summary: Регистрация нового пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RegisterRequest" }
+      responses:
+        "201":
+          description: Пользователь создан, токены выданы
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TokenResponse" }
+        "400":
+          description: Email или username уже заняты
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Вход в систему
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginRequest" }
+      responses:
+        "200":
+          description: Успешный вход
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TokenResponse" }
+        "401":
+          description: Неверный email или пароль
+
+  /auth/refresh:
+    post:
+      tags: [auth]
+      summary: Обновление access-токена через refresh-токен
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token: { type: string }
+      responses:
+        "200":
+          description: Новая пара токенов
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TokenResponse" }
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Выход из системы (инвалидация токена)
+      security: [{ BearerAuth: [] }]
+      responses:
+        "204": { description: Выход выполнен }
+
+  /auth/me:
+    get:
+      tags: [auth]
+      summary: Получить данные текущего пользователя
+      security: [{ BearerAuth: [] }]
+      responses:
+        "200":
+          description: Данные пользователя
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserResponse" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /auth/me/profile:
+    patch:
+      tags: [auth]
+      summary: Обновить ФИО профиля
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProfileUpdateRequest" }
+      responses:
+        "200":
+          description: Обновлённые данные пользователя
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserResponse" }
+
+  /auth/me/change-password:
+    post:
+      tags: [auth]
+      summary: Смена пароля
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChangePasswordRequest" }
+      responses:
+        "204": { description: Пароль изменён }
+        "400": { description: Неверный текущий пароль }
+
+  # ── GAME ────────────────────────────────────────────────────────────────────
+  /game/scenarios/{location}:
+    get:
+      tags: [game]
+      summary: Получить сценарии для уровня (рандомизированные)
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: location
+          in: path
+          required: true
+          schema: { type: string, enum: [office, home, wifi] }
+      responses:
+        "200":
+          description: Список сценариев
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ScenarioResponse" }
+
+  /game/start:
+    post:
+      tags: [game]
+      summary: Начать игровую сессию
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StartSessionRequest" }
+      responses:
+        "200":
+          description: Сессия создана
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StartSessionResponse" }
+
+  /game/answer:
+    post:
+      tags: [game]
+      summary: Ответить на вопрос сценария
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AnswerRequest" }
+      responses:
+        "200":
+          description: Результат ответа
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AnswerResponse" }
+
+  /game/complete:
+    post:
+      tags: [game]
+      summary: Завершить игровую сессию
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CompleteSessionRequest" }
+      responses:
+        "200":
+          description: Итоги сессии
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CompleteSessionResponse" }
+
+  /game/submit-result:
+    post:
+      tags: [game]
+      summary: Записать итог сессии (фронтенд-режим с клиентскими сценариями)
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SubmitResultRequest" }
+      responses:
+        "200":
+          description: Обновлённые данные пользователя
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SubmitResultResponse" }
+
+  /game/ai-generate:
+    get:
+      tags: [game]
+      summary: "Сгенерировать AI-сценарий (Mistral) — KILLER FEATURE"
+      description: |
+        Запрашивает Mistral AI для генерации уникального сценария атаки.
+        Результат кешируется в Redis (TTL 24ч).
+        При недоступности API возвращает fallback из базы данных.
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: attack_type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [phishing, bec, social-engineering, credential_stuffing,
+                   vishing, deepfake, mitm, evil_twin, password,
+                   smishing, qr_phishing, fake_app]
+          description: Тип атаки (случайный если не указан)
+      responses:
+        "200":
+          description: Сгенерированный сценарий
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AIScenarioResponse" }
+
+  # ── USERS ───────────────────────────────────────────────────────────────────
+  /users/me/stats:
+    get:
+      tags: [users]
+      summary: Статистика текущего пользователя
+      security: [{ BearerAuth: [] }]
+      responses:
+        "200":
+          description: Статистика
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserStats" }
+
+  /users/me/history:
+    get:
+      tags: [users]
+      summary: История игровых сессий
+      security: [{ BearerAuth: [] }]
+      responses:
+        "200":
+          description: Список сессий
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessions:
+                    type: array
+                    items: { $ref: "#/components/schemas/SessionHistoryItem" }
+                  total: { type: integer }
+
+  # ── LEADERBOARD ─────────────────────────────────────────────────────────────
+  /leaderboard:
+    get:
+      tags: [leaderboard]
+      summary: Таблица лидеров
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10, maximum: 100 }
+      responses:
+        "200":
+          description: Топ игроков
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/LeaderboardEntry" }
+
+  /leaderboard/me:
+    get:
+      tags: [leaderboard]
+      summary: Место текущего пользователя в рейтинге
+      security: [{ BearerAuth: [] }]
+      responses:
+        "200":
+          description: Ранг и перцентиль
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rank:        { type: integer, nullable: true }
+                  total_score: { type: integer }
+                  league:      { type: string }
+                  percentile:  { type: number, nullable: true }
+
+  # ── CERTIFICATES ────────────────────────────────────────────────────────────
+  /certificates/me:
+    get:
+      tags: [certificates]
+      summary: Сертификаты текущего пользователя
+      security: [{ BearerAuth: [] }]
+      responses:
+        "200":
+          description: Список сертификатов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:                { type: string, format: uuid }
+                    location:          { type: string }
+                    final_score:       { type: integer }
+                    accuracy_percent:  { type: integer }
+                    verification_code: { type: string }
+                    issued_at:         { type: string, format: date-time }
+
+  /certificates/verify/{verification_code}:
+    get:
+      tags: [certificates]
+      summary: Верификация сертификата по коду
+      parameters:
+        - name: verification_code
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Сертификат действителен }
+        "404": { description: Сертификат не найден }
+
+  # ── ADMIN ───────────────────────────────────────────────────────────────────
+  /admin/users:
+    get:
+      tags: [admin]
+      summary: Список всех пользователей
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: page   ; in: query; schema: { type: integer, default: 1 }
+        - name: limit  ; in: query; schema: { type: integer, default: 50, maximum: 200 }
+        - name: search ; in: query; schema: { type: string }; description: "Поиск по email / username"
+      responses:
+        "200":
+          description: Список пользователей
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items: { $ref: "#/components/schemas/AdminUserItem" }
+                  total: { type: integer }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /admin/users/{user_id}:
+    delete:
+      tags: [admin]
+      summary: Удалить пользователя
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: user_id; in: path; required: true; schema: { type: string, format: uuid }
+      responses:
+        "204": { description: Пользователь удалён }
+        "400": { description: Нельзя удалить самого себя }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /admin/users/{user_id}/edit:
+    patch:
+      tags: [admin]
+      summary: Редактировать данные пользователя
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: user_id; in: path; required: true; schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:   { type: string }
+                email:      { type: string, format: email }
+                first_name: { type: string }
+                last_name:  { type: string }
+                patronymic: { type: string }
+      responses:
+        "200": { description: Изменения сохранены }
+
+  /admin/users/{user_id}/role:
+    patch:
+      tags: [admin]
+      summary: Изменить роль пользователя
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: user_id; in: path; required: true; schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role: { type: string, enum: [user, admin] }
+      responses:
+        "200": { description: Роль обновлена }
+
+  /admin/users/{user_id}/status:
+    patch:
+      tags: [admin]
+      summary: Активировать / деактивировать пользователя
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: user_id; in: path; required: true; schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                is_active: { type: boolean }
+      responses:
+        "200": { description: Статус обновлён }
+
+  /admin/stats:
+    get:
+      tags: [admin]
+      summary: Общая статистика платформы
+      security: [{ BearerAuth: [] }]
+      responses:
+        "200":
+          description: Статистика
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminStats" }
+
+  /admin/scenarios:
+    get:
+      tags: [admin]
+      summary: Список всех сценариев
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: location;    in: query; schema: { type: string }
+        - name: attack_type; in: query; schema: { type: string }
+        - name: published;   in: query; schema: { type: boolean }
+        - name: page;        in: query; schema: { type: integer, default: 1 }
+        - name: limit;       in: query; schema: { type: integer, default: 50 }
+      responses:
+        "200": { description: Список сценариев }
+    post:
+      tags: [admin]
+      summary: Создать сценарий атаки
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ScenarioCreateRequest" }
+      responses:
+        "201":
+          description: Сценарий создан
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scenario_id: { type: string, format: uuid }
+
+  /admin/scenarios/{scenario_id}:
+    put:
+      tags: [admin]
+      summary: Обновить сценарий
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: scenario_id; in: path; required: true; schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scenario_text:       { type: string }
+                answer_options:      { type: array, items: { type: object } }
+                correct_answer_id:   { type: string }
+                explanation_wrong:   { type: string }
+                explanation_correct: { type: string }
+      responses:
+        "200": { description: Сценарий обновлён }
+    delete:
+      tags: [admin]
+      summary: Удалить сценарий
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: scenario_id; in: path; required: true; schema: { type: string, format: uuid }
+      responses:
+        "204": { description: Удалён }
+
+  /admin/scenarios/{scenario_id}/publish:
+    patch:
+      tags: [admin]
+      summary: Опубликовать / снять с публикации сценарий
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: scenario_id; in: path; required: true; schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                is_published: { type: boolean }
+      responses:
+        "200": { description: Статус публикации изменён }
+
+  /admin/logs:
+    get:
+      tags: [admin]
+      summary: Логи действий администраторов
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: page;  in: query; schema: { type: integer, default: 1 }
+        - name: limit; in: query; schema: { type: integer, default: 50 }
+      responses:
+        "200":
+          description: Список логов
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logs:
+                    type: array
+                    items: { $ref: "#/components/schemas/AdminLogItem" }
+                  total: { type: integer }
+
+  # ── WebSocket ────────────────────────────────────────────────────────────────
+  /ws/game/{session_id}:
+    get:
+      tags: [game]
+      summary: WebSocket — real-time обновления сессии
+      description: |
+        `ws://host/ws/game/{session_id}?token=<JWT>`
+
+        Сервер отправляет события:
+        - `{"type": "hp_update", "hp": 85}`
+        - `{"type": "session_complete", "score": 120}`
+      parameters:
+        - name: session_id; in: path; required: true; schema: { type: string, format: uuid }
+        - name: token;      in: query; required: true; schema: { type: string }
+      responses:
+        "101": { description: WebSocket Upgrade }

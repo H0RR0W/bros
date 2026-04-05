@@ -1,0 +1,139 @@
+<svg viewBox="0 0 200 256" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <!-- Sky -->
+  <rect width="200" height="256" fill="#1a1f3c"/>
+  <!-- Stars -->
+  <rect x="20" y="12" width="4" height="4" fill="#ffffff" opacity="0.6"/>
+  <rect x="60" y="24" width="4" height="4" fill="#ffffff" opacity="0.4"/>
+  <rect x="100" y="8" width="4" height="4" fill="#ffffff" opacity="0.7"/>
+  <rect x="32" y="40" width="4" height="4" fill="#ffffff" opacity="0.3"/>
+  <!-- Moon -->
+  <rect x="148" y="8" width="40" height="40" fill="#f5e64a"/>
+  <rect x="152" y="8" width="32" height="32" fill="#f5e64a"/>
+  <rect x="144" y="12" width="8" height="24" fill="#f5e64a"/>
+  <rect x="188" y="12" width="8" height="24" fill="#f5e64a"/>
+  <!-- Moon shading -->
+  <rect x="168" y="16" width="8" height="8" fill="#c8b800" opacity="0.4"/>
+  <rect x="164" y="28" width="8" height="4" fill="#c8b800" opacity="0.3"/>
+  <!-- Buildings background -->
+  <rect x="0" y="140" width="32" height="116" fill="#0d1226"/>
+  <rect x="8" y="120" width="16" height="136" fill="#0d1226"/>
+  <rect x="28" y="148" width="24" height="108" fill="#0f1430"/>
+  <rect x="148" y="132" width="24" height="124" fill="#0d1226"/>
+  <rect x="160" y="112" width="16" height="144" fill="#0d1226"/>
+  <rect x="176" y="144" width="24" height="112" fill="#0f1430"/>
+  <!-- Building windows -->
+  <rect x="12" y="128" width="4" height="4" fill="#f5e64a" opacity="0.7"/>
+  <rect x="20" y="128" width="4" height="4" fill="#f5e64a" opacity="0.5"/>
+  <rect x="12" y="136" width="4" height="4" fill="#f5e64a" opacity="0.3"/>
+  <rect x="20" y="140" width="4" height="4" fill="#f5e64a" opacity="0.6"/>
+  <rect x="164" y="120" width="4" height="4" fill="#f5e64a" opacity="0.7"/>
+  <rect x="172" y="124" width="4" height="4" fill="#f5e64a" opacity="0.4"/>
+  <rect x="164" y="132" width="4" height="4" fill="#f5e64a" opacity="0.6"/>
+  <rect x="172" y="136" width="4" height="4" fill="#f5e64a" opacity="0.3"/>
+
+  <!-- === CHARACTER === -->
+  <!-- Hair top -->
+  <rect x="76" y="28" width="48" height="8" fill="#111111"/>
+  <rect x="72" y="32" width="56" height="8" fill="#111111"/>
+  <rect x="68" y="36" width="64" height="12" fill="#1a0800"/>
+  <!-- Hair side left -->
+  <rect x="68" y="48" width="8" height="16" fill="#1a0800"/>
+  <!-- Hair side right -->
+  <rect x="124" y="48" width="8" height="16" fill="#1a0800"/>
+
+  <!-- Face -->
+  <rect x="76" y="44" width="48" height="40" fill="#c8845a"/>
+  <!-- Face top rounding -->
+  <rect x="72" y="48" width="56" height="8" fill="#c8845a"/>
+  <!-- Cheeks -->
+  <rect x="72" y="56" width="8" height="20" fill="#c8845a"/>
+  <rect x="120" y="56" width="8" height="20" fill="#c8845a"/>
+
+  <!-- Sunglasses frame -->
+  <rect x="72" y="56" width="56" height="4" fill="#111111"/>
+  <!-- Left lens -->
+  <rect x="72" y="56" width="24" height="16" fill="#111111"/>
+  <!-- Right lens -->
+  <rect x="104" y="56" width="24" height="16" fill="#111111"/>
+  <!-- Bridge -->
+  <rect x="96" y="60" width="8" height="4" fill="#333333"/>
+  <!-- Glasses shine -->
+  <rect x="76" y="60" width="4" height="4" fill="#ffffff" opacity="0.4"/>
+  <rect x="108" y="60" width="4" height="4" fill="#ffffff" opacity="0.4"/>
+
+  <!-- Nose -->
+  <rect x="96" y="72" width="8" height="4" fill="#a8623a"/>
+  <rect x="92" y="76" width="16" height="4" fill="#a8623a"/>
+
+  <!-- Mouth - neutral/stern -->
+  <rect x="88" y="80" width="24" height="4" fill="#7a3820"/>
+
+  <!-- Ear left -->
+  <rect x="68" y="60" width="8" height="12" fill="#c8845a"/>
+  <rect x="64" y="64" width="8" height="8" fill="#b87040"/>
+  <!-- Ear right -->
+  <rect x="124" y="60" width="8" height="12" fill="#c8845a"/>
+  <rect x="128" y="64" width="8" height="8" fill="#b87040"/>
+
+  <!-- Neck -->
+  <rect x="92" y="84" width="16" height="16" fill="#c8845a"/>
+
+  <!-- White shirt / collar -->
+  <rect x="84" y="96" width="32" height="8" fill="#f0f0f0"/>
+  <rect x="88" y="100" width="24" height="24" fill="#f0f0f0"/>
+
+  <!-- Collar left flap -->
+  <rect x="84" y="96" width="12" height="16" fill="#f0f0f0"/>
+  <rect x="76" y="100" width="16" height="12" fill="#f0f0f0"/>
+  <!-- Collar right flap -->
+  <rect x="104" y="96" width="12" height="16" fill="#f0f0f0"/>
+  <rect x="108" y="100" width="16" height="12" fill="#f0f0f0"/>
+
+  <!-- Bowtie -->
+  <rect x="92" y="100" width="16" height="8" fill="#0a0a0a"/>
+  <rect x="88" y="100" width="8" height="8" fill="#111111"/>
+  <rect x="104" y="100" width="8" height="8" fill="#111111"/>
+  <rect x="96" y="102" width="8" height="4" fill="#222222"/>
+
+  <!-- Jacket body -->
+  <rect x="60" y="108" width="80" height="148" fill="#0a0a12"/>
+  <!-- Jacket shading -->
+  <rect x="60" y="108" width="16" height="148" fill="#0d0d1a"/>
+  <rect x="124" y="108" width="16" height="148" fill="#0d0d1a"/>
+  <!-- Jacket highlight left -->
+  <rect x="60" y="108" width="4" height="100" fill="#1a1a2e" opacity="0.6"/>
+  <!-- Jacket highlight right -->
+  <rect x="136" y="108" width="4" height="100" fill="#1a1a2e" opacity="0.6"/>
+
+  <!-- Left lapel -->
+  <rect x="76" y="108" width="16" height="36" fill="#141420"/>
+  <rect x="72" y="108" width="12" height="28" fill="#141420"/>
+  <!-- Right lapel -->
+  <rect x="108" y="108" width="16" height="36" fill="#141420"/>
+  <rect x="116" y="108" width="12" height="28" fill="#141420"/>
+
+  <!-- Shirt showing between lapels -->
+  <rect x="88" y="108" width="24" height="48" fill="#e8e8e8"/>
+  <!-- Shirt buttons -->
+  <rect x="96" y="116" width="4" height="4" fill="#cccccc"/>
+  <rect x="96" y="124" width="4" height="4" fill="#cccccc"/>
+  <rect x="96" y="132" width="4" height="4" fill="#cccccc"/>
+
+  <!-- Pocket square -->
+  <rect x="120" y="116" width="12" height="8" fill="#ffffff"/>
+  <rect x="120" y="112" width="12" height="4" fill="#f0f0f0"/>
+
+  <!-- Left arm -->
+  <rect x="44" y="108" width="20" height="100" fill="#0a0a12"/>
+  <rect x="44" y="108" width="4" height="100" fill="#141420"/>
+  <!-- Right arm -->
+  <rect x="136" y="108" width="20" height="100" fill="#0a0a12"/>
+  <rect x="152" y="108" width="4" height="100" fill="#141420"/>
+
+  <!-- Left hand/cuff -->
+  <rect x="44" y="200" width="20" height="8" fill="#f0f0f0"/>
+  <rect x="48" y="208" width="12" height="12" fill="#c8845a"/>
+  <!-- Right hand/cuff -->
+  <rect x="136" y="200" width="20" height="8" fill="#f0f0f0"/>
+  <rect x="140" y="208" width="12" height="12" fill="#c8845a"/>
+</svg>
